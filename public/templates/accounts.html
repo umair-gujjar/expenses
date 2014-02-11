@@ -1,0 +1,22 @@
+<h2>Accounts</h2>
+<table class="table">
+    <tr>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Entries</th>
+    </tr>
+    <tbody data-bind="foreach: accounts">
+        <tr>
+            <td>
+                <a data-bind="text: code, attr: { href: '#account/edit/' + $id }" href="#"></a>
+            </td>
+            <td data-bind="text: name"></td>
+            <td data-bind="text: type"></td>
+            <td>
+                <a data-bind="attr: { href: '#account/' + $id + '/items' }" href="#">View</a>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<a class="btn btn-default" href="#account/add" role="button">Add</a>

@@ -1,0 +1,22 @@
+<h2>Account entries</h2>
+<table class="table">
+    <tr>
+        <th>Date</th>
+        <th>Title</th>
+        <th>Item title</th>
+        <th>Amount</th>
+        <th>Effect</th>
+    </tr>
+    <tbody data-bind="foreach: accounts">
+        <tr>
+            <td data-bind="text: date"></td>
+            <td>
+                <a data-bind="text: entry_title,
+                    attr: { href: '#entry/view/' + entry_id }" href="#"></a>
+            </td>
+            <td data-bind="text: title"></td>
+            <td data-bind="text: amount"></td>
+            <td data-bind="text: effect"></td>
+        </tr>
+    </tbody>
+</table>

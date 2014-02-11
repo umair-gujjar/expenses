@@ -1,0 +1,30 @@
+<h2 data-bind="text: title"></h2>
+<strong>At </strong><span data-bind="text: date"></span>
+<h3>Items</h3>
+<table class="table">
+    <tr>
+        <th>Debit</th>
+        <th>Credit</th>
+        <th>Original amount</th>
+        <th>Currency</th>
+        <th>EUR amount</th>
+    </tr>
+    <tbody data-bind="foreach: items">
+        <tr>
+            <td>
+                <a data-bind="text: debit.code + ' (' + debit.name + ')',
+                    attr: { href: '#account/' + debit.$id + '/items' }" href="#"></a>
+            </td>
+            <td>
+                <a data-bind="text: credit.code + ' (' + credit.name + ')',
+                    attr: { href: '#account/' + credit.$id + '/items' }" href="#"></a>
+            </td>
+            <td data-bind="text: amount.toFixed(2)"></td>
+            <td data-bind="text: currency.toUpperCase()"></td>
+            <td data-bind="text: eur_amount.toFixed(2)"></td>
+        </tr>
+    </tbody>
+</table>
+<a data-bind="attr: { href: '#entry/edit/' + $id }" class="btn btn-default" href="#" role="button">Edit</a>
+<a data-bind="click: copy" class="btn btn-default" href="#" role="button">Copy</a>
+<a class="btn btn-default" href="#entries" role="button">Back</a>

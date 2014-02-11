@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Expenses</title>
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<style>
+    body { margin-top: 1em; }
+    .pages { display: none; }
+    .nav { margin-bottom: 1em; }
+    .messages { position: absolute; top: 2em; left: 2em; z-index: 10000; opacity: 0.95; } </style>
+</head>
+<body>
+    <div class="container">
+        <ul class="nav nav-pills">
+            <li class="active"><a href="#entries">Entries</a></li>
+            <li><a href="#accounts">Accounts</a></li>
+        </ul>
+        <form data-bind="submit: update" class="form-horizontal" role="form" id="period">
+            <div class="form-group">
+                <label class="col-sm-2 control-label" for="start-month">Start month</label>
+                <div class="col-sm-2">
+                    <select data-bind="options: months, value: start_month"
+                        required="true" class="form-control" id="start-month"></select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label" for="end-month">End month</label>
+                <div class="col-sm-2">
+                    <select data-bind="options: months, value: end_month"
+                        required="true" class="form-control" id="end-month"></select>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-default">Update</button>
+                </div>
+            </div>
+        <form>
+        <div id="messages" class="messages"></div>
+        <div id="content"></div>
+    </div>
+    <script src="js/knockout-3.0.0.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/q.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/moment.min.js"></script>
+    <script src="js/xhr.js"></script>
+    <script src="js/period.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
