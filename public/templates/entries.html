@@ -1,18 +1,21 @@
 <h2>Entries</h2>
+<p>
+    All entries that have item with date in the selected period.
+</p>
 <table class="table">
     <tr>
         <th>Date</th>
-        <th>Amount</th>
         <th>Title</th>
     </tr>
     <tbody data-bind="foreach: entries">
         <tr>
-            <td data-bind="text: date"></td>
-            <td data-bind="text: amount ? amount.toFixed(2) : 'multiple items'"></td>
+            <td data-bind="text: formatDate(date)"></td>
             <td>
                 <a data-bind="text: title, attr: { href: '#entry/view/' + $id }" href="#"></a>
             </td>
         </tr>
     </tbody>
 </table>
-<a class="btn btn-default" href="#entry/add" role="button">Add</a>
+<a class="btn btn-default" href="#entry/add" role="button">
+    <span class="glyphicon glyphicon-plus"></span> Add
+</a>

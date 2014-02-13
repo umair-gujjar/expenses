@@ -180,7 +180,6 @@ entry_schema(_{
     tag: entry,
     keys: _{
         title: _{ type: string },
-        date: _{ type: integer },
         items: _{
             type: list,
             items: _{
@@ -188,10 +187,11 @@ entry_schema(_{
                 tag: item,
                 keys: _{
                     title: _{ type: string },
+                    date: _{ type: integer },
                     debit: _{ type: atom },
                     credit: _{ type: atom },
-                    amount: _{ type: number },
-                    eur_amount: _{ type: number },
+                    amount: _{ type: integer },
+                    eur_amount: _{ type: integer },
                     currency: _{
                         type: enum,
                         values: [

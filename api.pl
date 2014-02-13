@@ -35,18 +35,57 @@ new_entry:-
 get_entries(Start, End):-
     atom_number(Start, StartDate),
     atom_number(End, EndDate),
-    ds_all(entry, [title, date, items], Entries),
+    ds_all(entry, [title, items], Entries),
     include(date_in_range(StartDate, EndDate), Entries, Filtered),
-    sort_dict(date, desc, Filtered, Sorted),
+    maplist(attach_earliest_time, Filtered, WithDate),
+    sort_dict(date, desc, WithDate, Sorted),
     reply_json(_{ status: success, data: Sorted }).
 
+% Succeeds when the entry has and item
+% in the given date range.
+
 date_in_range(Start, End, Entry):-
-    get_dict_ex(date, Entry, Date),
+    get_dict_ex(items, Entry, Items),
+    member(Item, Items),
+    get_dict(date, Item, Date),
     Date >= Start, Date =< End.
+
+% Attaches the earliest item date to
+% the entry.
+
+attach_earliest_time(Entry, Out):-
+    earliest_date(Entry, Date),
+    put_dict(date, Entry, Date, Out).
+
+earliest_date(Entry, Date):-
+    get_dict_ex(items, Entry, Items),
+    earliest_item_date(Items,  Date).
+
+earliest_item_date([Item|Items], Earliest):-
+    get_dict_ex(date, Item, Date),
+    earliest_item_date(Items, Date, Earliest).
+
+earliest_item_date([Item|Items], Acc, Earliest):-
+    get_dict_ex(date, Item, Date),
+    (   Acc < Date
+    ->  earliest_item_date(Items, Acc, Earliest)
+    ;   earliest_item_date(Items, Date, Earliest)).
+
+earliest_item_date([], Acc, Acc).
+
+% Responds entry without accounts.
 
 :- route_get(api/entry/Id, get_entry(Id)).
 
 get_entry(Id):-
+    ds_get(Id, Entry),
+    reply_json(_{ status: success, data: Entry }).
+
+% Responds full entry with accounts.
+
+:- route_get(api/entry/Id/full, get_full_entry(Id)).
+
+get_full_entry(Id):-
     ds_get(Id, Entry),
     attach_entry_accounts(Entry, Tmp),
     reply_json(_{ status: success, data: Tmp }).
@@ -87,17 +126,6 @@ update_entry(Id):-
         ds_update(Tmp),
         reply_json(_{ status: success, data: Id })
     ;   reply_error(invalid_data)).
-
-% Copies given entry.
-% Responds back the newly generated ID.
-
-:- route_put(api/entry/Id/copy, copy_entry(Id)).
-
-copy_entry(Id):-
-    ds_get(Id, Entry),
-    del_dict('$id', Entry, _, Tmp),
-    ds_insert(Tmp, IdNew),
-    reply_json(_{ status: success, data: IdNew }).
 
 :- route_post(api/account, new_account).
 
@@ -166,30 +194,30 @@ get_account_items(Id, Start, End):-
     atom_number(Start, StartDate),
     atom_number(End, EndDate),
     ds_all(entry, All),
-    include(date_in_range(StartDate, EndDate), All, Filtered),
-    account_items(Filtered, Id, Items),
+    account_items(All, StartDate, EndDate, Id, Items),
     sort_dict(date, desc, Items, Sorted),
     reply_json(_{ status: success, data: Sorted }).
 
-account_items(All, Id, Items):-
-    account_items(All, Id, [], Items).
+account_items(All, Start, End, Id, Items):-
+    account_items(All, Start, End, Id, [], Items).
 
-account_items([Entry|Entries], Id, Acc, AccountItems):-
-    get_dict_ex(date, Entry, Date),
+account_items([Entry|Entries], Start, End, Id, Acc, AccountItems):-
     get_dict_ex(title, Entry, EntryTitle),
     get_dict_ex('$id', Entry, EntryId),
     get_dict_ex(items, Entry, Items),
-    account_entry_items(Items, EntryTitle, EntryId, Date, Id, Acc, Tmp),
-    account_items(Entries, Id, Tmp, AccountItems).
+    account_entry_items(Items, Start, End, EntryTitle, EntryId, Id, Acc, Tmp),
+    account_items(Entries, Start, End, Id, Tmp, AccountItems).
 
-account_items([], _, Acc, Acc).
+account_items([], _, _, _, Acc, Acc).
 
-account_entry_items([Item|Items], EntryTitle, EntryId, Date, Id, Acc, Out):-
+account_entry_items([Item|Items], Start, End, EntryTitle, EntryId, Id, Acc, Out):-
     get_dict_ex(debit, Item, Debit),
     get_dict_ex(credit, Item, Credit),
     get_dict_ex(eur_amount, Item, Eur),
     get_dict_ex(title, Item, Title),
-    (   (Debit = Id ; Credit = Id)
+    get_dict_ex(date, Item, Date),
+    (   (Debit = Id ; Credit = Id),
+        Date >= Start, Date =< End
     ->  ds_get(Debit, DebitAccount),
         ds_get(Credit, CreditAccount),
         (   Debit = Id
@@ -208,10 +236,10 @@ account_entry_items([Item|Items], EntryTitle, EntryId, Date, Id, Acc, Out):-
             effect: Amount,
             title: Title
         },
-        account_entry_items(Items, EntryTitle, EntryId, Date, Id, [Row|Acc], Out)
-    ;   account_entry_items(Items, EntryTitle, EntryId, Date, Id, Acc, Out)).
+        account_entry_items(Items, Start, End, EntryTitle, EntryId, Id, [Row|Acc], Out)
+    ;   account_entry_items(Items, Start, End, EntryTitle, EntryId, Id, Acc, Out)).
 
-account_entry_items([], _, _, _, _, Acc, Acc).
+account_entry_items([], _, _, _, _, _, Acc, Acc).
 
 effect_multiplier(debit, liability, -1).
 effect_multiplier(debit, income, -1).

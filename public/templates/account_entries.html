@@ -1,22 +1,26 @@
-<h2>Account entries</h2>
+<h2>Account <span data-bind="text: account.code + ' - ' + account.name"></span></h2>
 <table class="table">
     <tr>
         <th>Date</th>
         <th>Title</th>
         <th>Item title</th>
-        <th>Amount</th>
-        <th>Effect</th>
+        <th class="text-right">Amount</th>
     </tr>
     <tbody data-bind="foreach: accounts">
         <tr>
-            <td data-bind="text: date"></td>
+            <td data-bind="text: formatDate(date)"></td>
             <td>
                 <a data-bind="text: entry_title,
                     attr: { href: '#entry/view/' + entry_id }" href="#"></a>
             </td>
             <td data-bind="text: title"></td>
-            <td data-bind="text: amount"></td>
-            <td data-bind="text: effect"></td>
+            <td data-bind="text: formatAmount(effect)" class="text-right"></td>
         </tr>
     </tbody>
+    <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td data-bind="text: formatAmount(total)" class="text-right"></td>
+    </tr>
 </table>
