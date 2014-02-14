@@ -36,11 +36,21 @@ serve_file(Request):-
 
 http_unix_daemon:http_server_hook(Options):-
     ds_open('data.docstore'),
-    http_server(top_route, Options),
-    (   stream_property(current_input, tty(true))
-    ->  true
-    ;   http_unix_daemon:setup_signals,
-        http_unix_daemon:wait).
+    http_server(top_route, Options).
+
+% Provides toplevel for non-forking daemon.
+
+toplevel:-
+    on_signal(int,  _, quit),
+    on_signal(hup,  _, quit),
+    on_signal(term, _, quit),
+    repeat,
+    thread_get_message(Msg),
+    Msg == quit,
+    halt(0).
+
+quit(_) :-
+    thread_send_message(main, quit).
 
 :- dynamic(started).
 
