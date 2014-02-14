@@ -36,7 +36,9 @@ serve_file(Request):-
 
 http_unix_daemon:http_server_hook(Options):-
     ds_open('data.docstore'),
-    http_server(top_route, Options).
+    http_server(top_route, Options),
+    http_unix_daemon:setup_signals,
+    http_unix_daemon:wait.
 
 :- dynamic(started).
 
