@@ -4,6 +4,7 @@
 :- use_module(library(http/http_wrapper)).
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(http/http_dispatch)).
+:- use_module(library(http/http_unix_daemon)).
 
 :- use_module(library(docstore)).
 :- use_module(library(arouter)).
@@ -33,13 +34,16 @@ serve_file(Request):-
     exists_file(File),
     http_reply_file(File, [], Request).
 
-:- dynamic(initialized).
+http_unix_daemon:http_server_hook(Options):-
+    ds_open('data.docstore'),
+    http_server(top_route, Options).
 
-setup:-
-    (   initialized
+:- dynamic(started).
+
+start:-
+    (   started
     ->  true
-    ;   ds_open('data.docstore'),
-        http_server(top_route, [port(8018)]),
-        assertz(initialized)).
+    ;   assertz(started),
+        http_daemon).
 
-:- setup.
+:- start.
