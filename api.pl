@@ -142,7 +142,8 @@ new_account:-
 
 get_accounts:-
     ds_all(account, Accounts),
-    reply_json(_{ status: success, data: Accounts }).
+    sort_dict(code, Accounts, Sorted),
+    reply_json(_{ status: success, data: Sorted }).
 
 :- route_get(api/account/Id, get_account(Id)).
 
