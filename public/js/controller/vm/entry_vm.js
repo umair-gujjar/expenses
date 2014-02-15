@@ -53,14 +53,14 @@ module.exports = function(accounts, data) {
 
             api.entry.update(entry.$id, entry.toJS()).done(function() {
 
-                window.location.hash = '#entries';
+                window.location.hash = '#entry/view/' + entry.$id;
             });
 
         } else {
 
-            api.entry.save(entry.toJS()).done(function() {
+            api.entry.save(entry.toJS()).done(function(data) {
 
-                window.location.hash = '#entries';
+                window.location.hash = '#entry/view/' + data;
             });
         }
 
@@ -86,6 +86,14 @@ module.exports = function(accounts, data) {
     entry.addItem = function() {
 
         entry.items.push(itemVM());
+    };
+
+    entry.removeItem = function(item) {
+
+        if (confirm('Remove the item ' + item.title() + '?')) {
+            
+            entry.items.remove(item);
+        }
     };
 
     return entry;

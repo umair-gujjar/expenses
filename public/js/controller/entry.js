@@ -9,6 +9,20 @@ exports.view = function(id) {
 
     return api.entry.full(id).then(function(data) {
 
+        data.items.forEach(function(item) {
+
+            item.debit = data.accounts[item.debit];
+            item.credit = data.accounts[item.credit];
+        });
+
+        data.changes = Object.keys(data.changes).map(function(key) {
+
+            return {
+                account: data.accounts[key],
+                change: data.changes[key]
+            }
+        });
+
         // Handler for copying the entry.
 
         data.copy = function() {

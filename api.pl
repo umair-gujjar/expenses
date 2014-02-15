@@ -87,9 +87,18 @@ get_entry(Id):-
 
 get_full_entry(Id):-
     ds_get(Id, Entry),
-    attach_entry_accounts(Entry, Tmp),
-    reply_json(_{ status: success, data: Tmp }).
+    entry_accounts(Entry, Accounts),
+    entry_changes(Entry, Changes),
+    put_dict(Entry, _{
+        accounts: Accounts,
+        changes: Changes
+    }, Full),
+    reply_json(_{ status: success, data: Full }).
 
+% Replaces debit/credit keys in items
+% with respective accounts.
+
+/*
 attach_entry_accounts(Entry, Out):-
     get_dict_ex(items, Entry, Items),
     attach_item_accounts(Items, OutItems),
@@ -107,7 +116,56 @@ attach_item_accounts([Item|Items], [OutItem|OutItems]):-
     put_dict(New, Item, OutItem),
     attach_item_accounts(Items, OutItems).
 
-attach_item_accounts([], []).
+attach_item_accounts([], []).*/
+
+entry_accounts(Entry, Accounts):-
+    get_dict_ex(items, Entry, Items),
+    entry_item_accounts(Items, _{}, Accounts).
+
+entry_item_accounts([Item|Items], Acc, Accounts):-
+    get_dict_ex(debit, Item, Debit),
+    get_dict_ex(credit, Item, Credit),
+    (   get_dict(Debit, Acc, _)
+    ->  Tmp = Acc
+    ;   ds_get(Debit, DebitAccount),
+        put_dict(Debit, Acc, DebitAccount, Tmp)),
+    (   get_dict(Credit, Acc, _)
+    ->  New = Tmp
+    ;   ds_get(Credit, CreditAccount),
+        put_dict(Credit, Tmp, CreditAccount, New)),
+    entry_item_accounts(Items, New, Accounts).
+
+entry_item_accounts([], Acc, Acc).
+
+% Project changes in accounts.
+
+entry_changes(Entry, Changes):-
+    get_dict_ex(items, Entry, Items),
+    entry_item_changes(Items, Pairs),
+    collect_changes(Pairs, Changes).
+
+entry_item_changes([Item|Items], Changes):-
+    get_dict_ex(debit, Item, Debit),
+    get_dict_ex(credit, Item, Credit),
+    get_dict_ex(eur_amount, Item, Amount),
+    account_effect(Debit, debit, Amount, DebitEffect),
+    account_effect(Credit, credit, Amount, CreditEffect),
+    Changes = [Debit-DebitEffect,Credit-CreditEffect|Rest],
+    entry_item_changes(Items, Rest).
+
+entry_item_changes([], []).
+
+collect_changes([Key-Value|Changes], Out):-
+    collect_changes(Changes, Rest),
+    increase_key(Key, Rest, Value, Out).
+
+collect_changes([], _{}).
+
+increase_key(Key, In, Value, Out):-
+    (   get_dict(Key, In, Old)
+    ->  New is Old + Value,
+        put_dict(Key, In, New, Out)
+    ;   put_dict(Key, In, Value, Out)).
 
 :- route_del(api/entry/Id, delete_entry(Id)).
 
@@ -253,3 +311,17 @@ effect_multiplier(credit, income, 1).
 effect_multiplier(credit, equity, 1).
 effect_multiplier(credit, asset, -1).
 effect_multiplier(credit, expense, -1).
+
+% Balance account types.
+
+balance(equity).
+balance(asset).
+balance(liability).
+
+% Calculates amount effect for an account.
+
+account_effect(Id, Side, Amount, Effect):-
+    ds_get(Id, [type], Account),
+    get_dict_ex(type, Account, Type),
+    effect_multiplier(Side, Type, Mult),
+    Effect is Mult * Amount.
