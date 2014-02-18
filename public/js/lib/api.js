@@ -70,3 +70,13 @@ exports.account = {
         return XHR.delete('/api/account/' + id);
     }
 };
+
+exports.cash = {
+
+    list: function(start, end) {
+
+        var url = '/api/cash/' + start + '/' + end;
+
+        return XHR.get(url);
+    }
+};

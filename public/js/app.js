@@ -1,3 +1,4 @@
+var cash = require('./controller/cash');
 var entry = require('./controller/entry');
 var account = require('./controller/account');
 var view = require('./lib/view');
@@ -53,6 +54,11 @@ route(/^account\/edit\/(.+)/, function(id) {
 route(/^account\/(.+)\/items/, function(id) {
 
     account.items(id).done();
+});
+
+route(/^cash/, function() {
+
+    cash.show().done();
 });
 
 route(/^help/, function() {

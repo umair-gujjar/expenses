@@ -9,7 +9,8 @@ module.exports = function(data) {
         code: ko.observable(),
         name: ko.observable(),
         type: ko.observable(),
-        types: ['liability', 'income', 'equity', 'asset', 'expense']
+        types: ['liability', 'income', 'equity',
+            'asset', 'expense', 'cash', 'bank']
     }
 
     if (data) {

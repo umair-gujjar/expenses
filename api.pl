@@ -304,12 +304,16 @@ effect_multiplier(debit, liability, -1).
 effect_multiplier(debit, income, -1).
 effect_multiplier(debit, equity, -1).
 effect_multiplier(debit, asset, 1).
+effect_multiplier(debit, cash, 1).
+effect_multiplier(debit, bank, 1).
 effect_multiplier(debit, expense, 1).
 
 effect_multiplier(credit, liability, 1).
 effect_multiplier(credit, income, 1).
 effect_multiplier(credit, equity, 1).
 effect_multiplier(credit, asset, -1).
+effect_multiplier(credit, cash, -1).
+effect_multiplier(credit, bank, -1).
 effect_multiplier(credit, expense, -1).
 
 % Balance account types.
@@ -325,3 +329,71 @@ account_effect(Id, Side, Amount, Effect):-
     get_dict_ex(type, Account, Type),
     effect_multiplier(Side, Type, Mult),
     Effect is Mult * Amount.
+
+% Cash flow items.
+
+:- route_get(api/cash/Start/End,
+    get_cash_flow(Start, End)).
+
+get_cash_flow(Start, End):-
+    atom_number(Start, StartDate),
+    atom_number(End, EndDate),
+    cash_items(StartDate, EndDate, Items),
+    reply_json(_{ status: success, data: Items }).
+
+% Finds items that are in the given date range
+% and are made on cash/bank accounts.
+
+cash_items(Start, End, Items):-
+    ds_all(entry, Entries),
+    filter_entry_cash_items(Entries, Start, End, Items).
+
+filter_entry_cash_items(Entries, Start, End, Items):-
+    filter_entry_cash_items(Entries, Start, End, [], Items).
+
+filter_entry_cash_items([Entry|Entries], Start, End, Acc, Filtered):-
+    get_dict_ex(items, Entry, Items),
+    filter_cash_items(Items, Start, End, FilteredItems),
+    append(FilteredItems, Acc, NewAcc),
+    filter_entry_cash_items(Entries, Start, End, NewAcc, Filtered).
+
+filter_entry_cash_items([], _, _, Acc, Acc).
+
+% Filters out items that are cash or bank items
+% (expense or income) and are made in the given date range.
+
+filter_cash_items([Item|Items], Start, End, [Out|Filtered]):-
+    get_dict_ex(date, Item, Date),
+    Date >= Start, Date =< End,
+    get_dict_ex(debit, Item, Debit),
+    get_dict_ex(credit, Item, Credit),
+    get_dict_ex(eur_amount, Item, Amount),
+    (   account_is_cash(Debit),
+        account_is_expense_or_income(Credit),
+        account_effect(Debit, debit, Amount, Effect),
+        ds_get(Credit, CreditAccount),
+        Out = _{ amount: Effect, account: CreditAccount, date: Date }
+    ;   account_is_cash(Credit),
+        account_is_expense_or_income(Debit),
+        account_effect(Credit, credit, Amount, Effect),
+        ds_get(Debit, DebitAccount),
+        Out = _{ amount: Effect, account: DebitAccount, date: Date }), !,
+    filter_cash_items(Items, Start, End, Filtered).
+
+filter_cash_items([_|Items], Start, End, Filtered):- !,
+    filter_cash_items(Items, Start, End, Filtered).
+
+filter_cash_items([], _, _, []).
+
+account_is_expense_or_income(AccountId):-
+    ds_get(AccountId, [type], Account),
+    get_dict_ex(type, Account, Type),
+    (Type = expense ; Type = income), !.
+
+% Succeeds when the account is a
+% cash or bank account.
+
+account_is_cash(AccountId):-
+    ds_get(AccountId, [type], Account),
+    get_dict_ex(type, Account, Type),
+    (Type = cash ; Type = bank), !.

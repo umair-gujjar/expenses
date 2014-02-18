@@ -1,0 +1,32 @@
+<h2>Cash flow</h2>
+<table class="table table-condensed">
+    <tr>
+        <th>Date</th>
+        <th>Account</th>
+        <th class="text-right">Amount</th>
+    </tr>
+    <tbody data-bind="foreach: items">
+        <tr>
+            <td data-bind="text: formatDate(date)"></d>
+            <td>
+                <a data-bind="text: account.code + '(' + account.name + ')', attr: { href: '#account/' + account.$id + '/items' }" href="#"></a>
+            </td>
+            <td data-bind="text: formatAmount(amount)" class="text-right"></td>
+        </tr>
+    </tbody>
+</table>
+<h3>Cash flow summary</h3>
+<table class="table table-condensed">
+    <tr>
+        <th>Account</th>
+        <th class="text-right">Amount</th>
+    </tr>
+    <tbody data-bind="foreach: summary">
+        <tr>
+            <td>
+                <a data-bind="text: account.code + '(' + account.name + ')', attr: { href: '#account/' + account.$id + '/items' }" href="#"></a>
+            </td>
+            <td data-bind="text: formatAmount(amount)" class="text-right"></td>
+        </tr>
+    </tbody>
+</table>

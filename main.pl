@@ -1,6 +1,7 @@
 :- module(main, []).
 
 :- use_module(library(http/http_json)).
+:- use_module(library(http/http_error)).
 :- use_module(library(http/http_wrapper)).
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(http/http_dispatch)).

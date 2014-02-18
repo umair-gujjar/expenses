@@ -169,7 +169,9 @@ account_schema(_{
                 income,
                 equity,
                 asset,
-                expense
+                expense,
+                cash,
+                bank
             ]
         }
     }
