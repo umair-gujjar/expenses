@@ -13,16 +13,20 @@
     .messages { position: absolute; top: 2em; left: 2em; z-index: 10000; opacity: 0.95; }
     .text-right { text-align: right; }
 </style>
+<style media="print">
+    body { font-family: serif; font-size: 12px; }
+</style>
 </head>
 <body>
     <div class="container">
-        <ul class="nav nav-pills">
+        <ul class="nav nav-pills hidden-print">
             <li><a href="#entries">Entries</a></li>
+            <li><a href="#expanded">Expanded</a></li>
             <li><a href="#accounts">Accounts</a></li>
             <li><a href="#cash">Cash flows</a></li>
             <li><a href="#help">Help</a></li>
         </ul>
-        <form data-bind="submit: update" class="form-horizontal" role="form" id="period">
+        <form data-bind="submit: update" class="form-horizontal hidden-print" role="form" id="period">
             <div class="form-group">
                 <label class="col-sm-2 control-label" for="year">Year</label>
                 <div class="col-sm-2">
@@ -51,7 +55,7 @@
                     </button>
                 </div>
             </div>
-        <form>
+        </form>
         <div id="messages" class="messages"></div>
         <div id="content"></div>
     </div>

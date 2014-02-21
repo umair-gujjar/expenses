@@ -9,7 +9,7 @@
         <tr>
             <td data-bind="text: formatDate(date)"></d>
             <td>
-                <a data-bind="text: account.code + '(' + account.name + ')', attr: { href: '#account/' + account.$id + '/items' }" href="#"></a>
+                <a data-bind="text: account.code + ' (' + account.name + ')', attr: { href: '#account/' + account.$id + '/items' }" href="#"></a>
             </td>
             <td data-bind="text: formatAmount(amount)" class="text-right"></td>
         </tr>
@@ -24,7 +24,7 @@
     <tbody data-bind="foreach: summary">
         <tr>
             <td>
-                <a data-bind="text: account.code + '(' + account.name + ')', attr: { href: '#account/' + account.$id + '/items' }" href="#"></a>
+                <a data-bind="text: account.code + ' (' + account.name + ')', attr: { href: '#account/' + account.$id + '/items' }" href="#"></a>
             </td>
             <td data-bind="text: formatAmount(amount)" class="text-right"></td>
         </tr>
