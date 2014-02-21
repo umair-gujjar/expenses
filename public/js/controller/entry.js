@@ -62,6 +62,37 @@ exports.list = function() {
     });
 };
 
+// Shows the list of expanded entries.
+
+exports.expanded = function() {
+
+    var start = period.start(), end = period.end();
+
+    return api.entry.list(start, end).then(function(entries) {
+
+        return api.account.all().then(function(accounts) {
+
+            var map = {};
+
+            accounts.forEach(function(account) {
+
+                map[account.$id] = account;
+            });
+
+            entries.forEach(function(entry) {
+
+                entry.items.forEach(function(item) {
+
+                    item.debit = map[item.debit];
+                    item.credit = map[item.credit];
+                })
+            });
+
+            return view.show('expanded', { entries: entries });
+        });
+    });
+};
+
 // Shows the edit form for the entry.
 
 exports.edit = function(id) {

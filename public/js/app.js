@@ -21,6 +21,11 @@ route(/^entries/, function() {
     entry.list().done();
 });
 
+route(/^expanded/, function() {
+
+    entry.expanded().done();
+});
+
 route(/^entry\/edit\/([a-z0-9\-]+)/, function(id) {
 
     entry.edit(id).done();

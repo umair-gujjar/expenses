@@ -1,0 +1,33 @@
+<h2>Entries (expanded)</h2>
+<p>
+    All entries that have item with date in the selected period.
+</p>
+<table class="table table-condensed">
+    <tr>
+        <th>Date</th>
+        <th>Title</th>
+        <th>Debit</th>
+        <th>Credit</th>
+        <th class="text-right">Amount</th>
+    </tr>
+    <tbody data-bind="foreach: entries">
+        <tr>
+            <td data-bind="text: formatDate(date)"></td>
+            <td>
+                <strong><a data-bind="text: title, attr: { href: '#entry/view/' + $id }" href="#"></a></strong>
+            </td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <!-- ko foreach: items -->
+            <tr>
+                <td data-bind="text: formatDate(date)"></td>
+                <td data-bind="text: title"></td>
+                <td data-bind="text: debit.code + ' (' + debit.name + ')'"></td>
+                <td data-bind="text: credit.code + ' (' + credit.name + ')'"></td>
+                <td data-bind="text: formatAmount(eur_amount)" class="text-right"></td>
+            </tr>
+        <!-- /ko -->
+    </tbody>
+</table>
