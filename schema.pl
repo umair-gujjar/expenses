@@ -15,8 +15,7 @@ convert(In, Schema, Out, Errors):-
     convert(@, Schema, In, Out, [], Errors).
 
 convert(Path, Schema, In, Out, EIn, EOut):-
-    get_dict_ex(type, Schema, Type),
-    convert_type(Type, Path, Schema, In, Out, EIn, EOut).
+    convert_type(Schema.type, Path, Schema, In, Out, EIn, EOut).
 
 % Converts dict type.
 % Adds error not_dict(Path) when
@@ -50,8 +49,7 @@ convert_type(Type, Path, _, _, _, _, _):-
 
 convert_list(Path, Schema, In, Out, EIn, EOut):-
     is_list(In), !,
-    get_dict_ex(items, Schema, ItemSchema),
-    convert_list(In, Path, 0, ItemSchema, Out, EIn, EOut).
+    convert_list(In, Path, 0, Schema.items, Out, EIn, EOut).
 
 convert_list(Path, _, In, In, EIn, EOut):-
     EOut = [not_list(Path, In)|EIn].
@@ -77,8 +75,7 @@ convert_dict(Path, _, In, In, EIn, EOut):-
 
 convert_dict(Tag, Path, Schema, In, Out, EIn, EOut):-
     (   get_dict(tag, Schema, Tag)
-    ->  get_dict_ex(keys, Schema, Keys),
-        dict_pairs(Keys, _, Pairs),
+    ->  dict_pairs(Schema.keys, _, Pairs),
         convert_keys(Pairs, Path, In, OutPairs, EIn, EOut),
         dict_pairs(Out, Tag, OutPairs)
     ;   Out = In,
@@ -141,14 +138,12 @@ convert_number(Path, _, In, In, EIn, EOut):-
 
 convert_enum(Path, Schema, In, In, EIn, EOut):-
     atom(In), !,
-    get_dict_ex(values, Schema, Values),
-    check_enum(Path, Values, In, EIn, EOut).
+    check_enum(Path, Schema.values, In, EIn, EOut).
 
 convert_enum(Path, Schema, In, Out, EIn, EOut):-
     string(In), !,
     atom_string(Out, In),
-    get_dict_ex(values, Schema, Values),
-    check_enum(Path, Values, Out, EIn, EOut).
+    check_enum(Path, Schema.values, Out, EIn, EOut).
 
 check_enum(_, Values, In, EIn, EIn):-
     memberchk(In, Values), !.

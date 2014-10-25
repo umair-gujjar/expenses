@@ -45,9 +45,8 @@ get_entries(Start, End):-
 % in the given date range.
 
 date_in_range(Start, End, Entry):-
-    get_dict_ex(items, Entry, Items),
-    member(Item, Items),
-    get_dict(date, Item, Date),
+    member(Item, Entry.items),
+    Date = Item.date,
     Date >= Start, Date =< End.
 
 % Attaches the earliest item date to
@@ -58,15 +57,13 @@ attach_earliest_time(Entry, Out):-
     put_dict(date, Entry, Date, Out).
 
 earliest_date(Entry, Date):-
-    get_dict_ex(items, Entry, Items),
-    earliest_item_date(Items,  Date).
+    earliest_item_date(Entry.items,  Date).
 
 earliest_item_date([Item|Items], Earliest):-
-    get_dict_ex(date, Item, Date),
-    earliest_item_date(Items, Date, Earliest).
+    earliest_item_date(Items, Item.date, Earliest).
 
 earliest_item_date([Item|Items], Acc, Earliest):-
-    get_dict_ex(date, Item, Date),
+    Date = Item.date,
     (   Acc < Date
     ->  earliest_item_date(Items, Acc, Earliest)
     ;   earliest_item_date(Items, Date, Earliest)).
@@ -95,36 +92,12 @@ get_full_entry(Id):-
     }, Full),
     reply_json(_{ status: success, data: Full }).
 
-% Replaces debit/credit keys in items
-% with respective accounts.
-
-/*
-attach_entry_accounts(Entry, Out):-
-    get_dict_ex(items, Entry, Items),
-    attach_item_accounts(Items, OutItems),
-    put_dict(items, Entry, OutItems, Out).
-
-attach_item_accounts([Item|Items], [OutItem|OutItems]):-
-    get_dict_ex(debit, Item, Debit),
-    get_dict_ex(credit, Item, Credit),
-    ds_get(Debit, DebitAccount),
-    ds_get(Credit, CreditAccount),
-    New = _{
-        debit: DebitAccount,
-        credit: CreditAccount
-    },
-    put_dict(New, Item, OutItem),
-    attach_item_accounts(Items, OutItems).
-
-attach_item_accounts([], []).*/
-
 entry_accounts(Entry, Accounts):-
-    get_dict_ex(items, Entry, Items),
-    entry_item_accounts(Items, _{}, Accounts).
+    entry_item_accounts(Entry.items, _{}, Accounts).
 
 entry_item_accounts([Item|Items], Acc, Accounts):-
-    get_dict_ex(debit, Item, Debit),
-    get_dict_ex(credit, Item, Credit),
+    Debit = Item.debit,
+    Credit = Item.credit,
     (   get_dict(Debit, Acc, _)
     ->  Tmp = Acc
     ;   ds_get(Debit, DebitAccount),
@@ -140,14 +113,13 @@ entry_item_accounts([], Acc, Acc).
 % Project changes in accounts.
 
 entry_changes(Entry, Changes):-
-    get_dict_ex(items, Entry, Items),
-    entry_item_changes(Items, Pairs),
+    entry_item_changes(Entry.items, Pairs),
     collect_changes(Pairs, Changes).
 
 entry_item_changes([Item|Items], Changes):-
-    get_dict_ex(debit, Item, Debit),
-    get_dict_ex(credit, Item, Credit),
-    get_dict_ex(eur_amount, Item, Amount),
+    Debit = Item.debit,
+    Credit = Item.credit,
+    Amount = Item.eur_amount,
     account_effect(Debit, debit, Amount, DebitEffect),
     account_effect(Credit, credit, Amount, CreditEffect),
     Changes = [Debit-DebitEffect,Credit-CreditEffect|Rest],
@@ -236,10 +208,9 @@ delete_account(Id):-
         reply_json(_{ status: success, data: Id })).
 
 entries_use_account([Entry|_], Account):-
-    get_dict_ex(items, Entry, Items),
-    member(Item, Items),
-    (   get_dict_ex(debit, Item, Account)
-    ;   get_dict_ex(credit, Item, Account)), !.
+    member(Item, Entry.items),
+    (   Account = Item.debit
+    ;   Account = Item.credit), !.
 
 entries_use_account([_|Entries], Account):-
     entries_use_account(Entries, Account).
@@ -261,28 +232,28 @@ account_items(All, Start, End, Id, Items):-
     account_items(All, Start, End, Id, [], Items).
 
 account_items([Entry|Entries], Start, End, Id, Acc, AccountItems):-
-    get_dict_ex(title, Entry, EntryTitle),
-    get_dict_ex('$id', Entry, EntryId),
-    get_dict_ex(items, Entry, Items),
+    EntryTitle = Entry.title,
+    EntryId = Entry.'$id',
+    Items = Entry.items,
     account_entry_items(Items, Start, End, EntryTitle, EntryId, Id, Acc, Tmp),
     account_items(Entries, Start, End, Id, Tmp, AccountItems).
 
 account_items([], _, _, _, Acc, Acc).
 
 account_entry_items([Item|Items], Start, End, EntryTitle, EntryId, Id, Acc, Out):-
-    get_dict_ex(debit, Item, Debit),
-    get_dict_ex(credit, Item, Credit),
-    get_dict_ex(eur_amount, Item, Eur),
-    get_dict_ex(title, Item, Title),
-    get_dict_ex(date, Item, Date),
+    Debit = Item.debit,
+    Credit = Item.credit,
+    Eur = Item.eur_amount,
+    Title = Item.title,
+    Date = Item.date,
     (   (Debit = Id ; Credit = Id),
         Date >= Start, Date =< End
     ->  ds_get(Debit, DebitAccount),
         ds_get(Credit, CreditAccount),
         (   Debit = Id
-        ->  get_dict_ex(type, DebitAccount, Type),
+        ->  Type = DebitAccount.type,
             effect_multiplier(debit, Type, Mult)
-        ;   get_dict_ex(type, CreditAccount, Type),
+        ;   Type = CreditAccount.type,
             effect_multiplier(credit, Type, Mult)),
         Amount is Mult * Eur,
         Row = _{
@@ -326,8 +297,7 @@ balance(liability).
 
 account_effect(Id, Side, Amount, Effect):-
     ds_get(Id, [type], Account),
-    get_dict_ex(type, Account, Type),
-    effect_multiplier(Side, Type, Mult),
+    effect_multiplier(Side, Account.type, Mult),
     Effect is Mult * Amount.
 
 % Cash flow items.
@@ -352,8 +322,7 @@ filter_entry_cash_items(Entries, Start, End, Items):-
     filter_entry_cash_items(Entries, Start, End, [], Items).
 
 filter_entry_cash_items([Entry|Entries], Start, End, Acc, Filtered):-
-    get_dict_ex(items, Entry, Items),
-    filter_cash_items(Items, Start, End, FilteredItems),
+    filter_cash_items(Entry.items, Start, End, FilteredItems),
     append(FilteredItems, Acc, NewAcc),
     filter_entry_cash_items(Entries, Start, End, NewAcc, Filtered).
 
@@ -363,11 +332,11 @@ filter_entry_cash_items([], _, _, Acc, Acc).
 % (expense or income) and are made in the given date range.
 
 filter_cash_items([Item|Items], Start, End, [Out|Filtered]):-
-    get_dict_ex(date, Item, Date),
+    Date = Item.date,
     Date >= Start, Date =< End,
-    get_dict_ex(debit, Item, Debit),
-    get_dict_ex(credit, Item, Credit),
-    get_dict_ex(eur_amount, Item, Amount),
+    Debit = Item.debit,
+    Credit = Item.credit,
+    Amount = Item.eur_amount,
     (   account_is_cash(Debit),
         \+ account_is_cash(Credit),
         account_effect(Debit, debit, Amount, Effect),
@@ -387,7 +356,7 @@ filter_cash_items([], _, _, []).
 
 account_is_expense_or_income(AccountId):-
     ds_get(AccountId, [type], Account),
-    get_dict_ex(type, Account, Type),
+    Type = Account.type,
     (Type = expense ; Type = income), !.
 
 % Succeeds when the account is a
@@ -395,5 +364,5 @@ account_is_expense_or_income(AccountId):-
 
 account_is_cash(AccountId):-
     ds_get(AccountId, [type], Account),
-    get_dict_ex(type, Account, Type),
+    Type = Account.type,
     (Type = cash ; Type = bank), !.
