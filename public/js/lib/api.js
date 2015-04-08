@@ -1,37 +1,163 @@
-var XHR = require('./xhr');
+var spinner = require('./spinner');
+
+var showCount = 0;
+
+function spinnerShow() {
+
+    if (showCount === 0) {
+
+        spinner.show();
+    }
+
+    showCount += 1;
+}
+
+function spinnerHide() {
+
+    showCount -= 1;
+
+    if (showCount === 0) {
+
+        spinner.hide();
+    }
+}
+
+function fetchGet(url) {
+
+    spinnerShow();
+
+    return fetch(url, {
+
+        headers: { 'Accept': 'application/json' }
+
+    }).catch(function(err) {
+
+        spinnerHide();
+
+        throw err;
+
+    }).then(handleResponse);
+}
+
+function fetchDelete(url) {
+
+    spinnerShow();
+
+    return fetch(url, {
+
+        method: 'DELETE',
+
+        headers: { 'Accept': 'application/json' }
+
+    }).catch(function(err) {
+
+        spinnerHide();
+
+        throw err;
+
+    }).then(handleResponse);
+}
+
+function fetchSave(url, data) {
+
+    spinnerShow();
+
+    return fetch(url, {
+
+        method: 'POST',
+
+        headers: {
+
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+
+        body: JSON.stringify(data)
+
+    }).catch(function(err) {
+
+        spinnerHide();
+
+        throw err;
+
+    }).then(handleResponse);
+}
+
+function fetchUpdate(url, data) {
+
+    spinnerShow();
+
+    return fetch(url, {
+
+        method: 'PUT',
+
+        headers: {
+
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+
+        body: JSON.stringify(data)
+
+    }).catch(function(err) {
+
+        spinnerHide();
+
+        throw err;
+
+    }).then(handleResponse);
+}
+
+function handleResponse(response) {
+
+    spinnerHide();
+
+    return response.json().then(function(json) {
+
+        if (json.status === 'success') {
+
+            return json.data;
+
+        } else {
+
+            throw new Error('API response is not success: ' + json.message);
+        }
+    });
+}
 
 exports.entry = {
 
     full: function(id) {
 
-        return XHR.get('/api/entry/' + id + '/full');
+        return fetchGet('/api/entry/' + encodeURIComponent(id) + '/full');
     },
 
     get: function(id) {
 
-        return XHR.get('/api/entry/' + id);
+        return fetchGet('/api/entry/' + encodeURIComponent(id));
     },
 
     list: function(start, end) {
 
-        var url = '/api/entries/' + start + '/' + end;
+        var url = '/api/entries/' + encodeURIComponent(start) +
+            '/' + encodeURIComponent(end);
 
-        return XHR.get(url);
+        return fetchGet(url);
     },
 
     remove: function(id) {
 
-        return XHR.delete('/api/entry/' + id);
+        return fetchDelete('/api/entry/' + encodeURIComponent(id));
     },
 
     update: function(id, data) {
 
-        return XHR.put('/api/entry/' + id, data);
+        return fetchUpdate('/api/entry/' + encodeURIComponent(id), data);
     },
 
     save: function(data) {
 
-        return XHR.post('/api/entry', data);
+        return fetchSave('/api/entry', data);
     }
 };
 
@@ -39,35 +165,35 @@ exports.account = {
 
     all: function() {
 
-        return XHR.get('/api/accounts');
+        return fetchGet('/api/accounts');
     },
 
     items: function(id, start, end) {
 
-        var url = '/api/account/' + id + '/items/' +
-            start + '/' + end;
+        var url = '/api/account/' + encodeURIComponent(id) + '/items/' +
+            encodeURIComponent(start) + '/' + encodeURIComponent(end);
 
-        return XHR.get(url);
+        return fetchGet(url);
     },
 
     get: function(id) {
 
-        return XHR.get('/api/account/' + id);
+        return fetchGet('/api/account/' + encodeURIComponent(id));
     },
 
     update: function(id, data) {
 
-        return XHR.put('/api/account/' + id, data);
+        return fetchUpdate('/api/account/' + encodeURIComponent(id), data);
     },
 
     save: function(data) {
 
-        return XHR.post('/api/account', data);
+        return fetchSave('/api/account', data);
     },
 
     remove: function(id) {
 
-        return XHR.delete('/api/account/' + id);
+        return fetchDelete('/api/account/' + encodeURIComponent(id));
     }
 };
 
@@ -75,8 +201,9 @@ exports.cash = {
 
     list: function(start, end) {
 
-        var url = '/api/cash/' + start + '/' + end;
+        var url = '/api/cash/' + encodeURIComponent(start) +
+            '/' + encodeURIComponent(end);
 
-        return XHR.get(url);
+        return fetchGet(url);
     }
 };
