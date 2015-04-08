@@ -61,5 +61,3 @@ for (var y = 2012; y <= currentYear + 1; y++) {
 
 exports.start_month(exports.months[currentMonth]);
 exports.end_month(exports.months[currentMonth]);
-
-return exports;

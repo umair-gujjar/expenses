@@ -1,6 +1,10 @@
+var fs = require('fs');
 var api = require('../lib/api');
 var view = require('../lib/view');
 var period = require('../lib/period');
+
+var cashTemplate = fs.readFileSync(__dirname +
+    '/../../templates/cash.html', { encoding: 'utf8' });
 
 exports.show = function() {
 
@@ -25,6 +29,6 @@ exports.show = function() {
             return { account: accounts[code], amount: summary[code] };
         });
 
-        return view.show('cash', { items: items, summary: sumList });
+        view.show(cashTemplate, { items: items, summary: sumList });
     });
 };

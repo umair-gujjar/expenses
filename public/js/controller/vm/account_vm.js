@@ -11,7 +11,7 @@ module.exports = function(data) {
         type: ko.observable(),
         types: ['liability', 'income', 'equity',
             'asset', 'expense', 'cash', 'bank']
-    }
+    };
 
     if (data) {
 
@@ -43,7 +43,8 @@ module.exports = function(data) {
             api.account.update(account.$id, account.toJS()).done(function() {
 
                 window.location.hash = '#accounts';
-            });
+
+            }).catch(handle_error);
 
         } else {
 
@@ -51,7 +52,7 @@ module.exports = function(data) {
 
                 window.location.hash = '#accounts';
 
-            });
+            }).catch(handle_error);
         }
 
         view.message('Account is saved.');
@@ -71,10 +72,10 @@ module.exports = function(data) {
 
                     view.message('Cannot delete the account. ' + err.message, 'alert-danger');
 
-                }).done();
+                }).catch(handle_error);
             }
         }
     };
 
     return account;
-}
+};

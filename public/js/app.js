@@ -1,3 +1,4 @@
+var fs = require('fs');
 var cash = require('./controller/cash');
 var entry = require('./controller/entry');
 var account = require('./controller/account');
@@ -5,70 +6,74 @@ var view = require('./lib/view');
 var period = require('./lib/period');
 var money = require('./lib/money');
 var date = require('./lib/date');
+var handle_error = require('./lib/handle_error');
 
 window.formatDate = function(unix) {
 
     return date.format(unix);
-}
+};
 
 window.formatAmount = function(amount) {
 
     return money.format(amount);
-}
+};
 
 route(/^entries/, function() {
 
-    entry.list().done();
+    entry.list().catch(handle_error);
 });
 
 route(/^expanded/, function() {
 
-    entry.expanded().done();
+    entry.expanded().catch(handle_error);
 });
 
 route(/^entry\/edit\/([a-z0-9\-]+)/, function(id) {
 
-    entry.edit(id).done();
+    entry.edit(id).catch(handle_error);
 });
 
 route(/^entry\/view\/([a-z0-9\-]+)/, function(id) {
 
-    entry.view(id).done();
+    entry.view(id).catch(handle_error);
 });
 
 route(/^entry\/add/, function() {
 
-    entry.add().done();
+    entry.add().catch(handle_error);
 });
 
 route(/^accounts/, function() {
 
-    account.list().done();
+    account.list().catch(handle_error);
 });
 
 route(/^account\/add/, function() {
 
-    account.add().done();
+    account.add().catch(handle_error);
 });
 
 route(/^account\/edit\/(.+)/, function(id) {
 
-    account.edit(id).done();
+    account.edit(id).catch(handle_error);
 });
 
 route(/^account\/(.+)\/items/, function(id) {
 
-    account.items(id).done();
+    account.items(id).catch(handle_error);
 });
 
 route(/^cash/, function() {
 
-    cash.show().done();
+    cash.show().catch(handle_error);
 });
+
+var helpTemplate = fs.readFileSync(__dirname +
+    '/../templates/help.html', { encoding: 'utf8' });
 
 route(/^help/, function() {
 
-    view.show('help', {}).done();
+    view.show(helpTemplate, {});
 });
 
 route(/.*/, function() {

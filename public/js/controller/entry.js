@@ -1,7 +1,15 @@
+var fs = require('fs');
 var entryVM = require('./vm/entry_vm');
 var api = require('../lib/api');
 var view = require('../lib/view');
 var period = require('../lib/period');
+var handle_error = require('../lib/handle_error');
+
+var entryTemplate = fs.readFileSync(__dirname +
+    '/../../templates/entry.html', { encoding: 'utf8' });
+
+var entryViewTemplate = fs.readFileSync(__dirname +
+    '/../../templates/entry_view.html', { encoding: 'utf8' });
 
 // Shows single entry.
 
@@ -20,7 +28,7 @@ exports.view = function(id) {
             return {
                 account: data.accounts[key],
                 change: data.changes[key]
-            }
+            };
         });
 
         // Handler for copying the entry.
@@ -35,20 +43,22 @@ exports.view = function(id) {
 
                     entry.$id = null;
 
-                    return view.show('entry', entryVM(accounts, entry)).then(function() {
+                    view.show(entryTemplate, entryVM(accounts, entry));
 
-                        // Set focus to title field.
+                    // Set focus to title field.
 
-                        document.getElementById('entry-title').focus();
-                    });
+                    document.getElementById('entry-title').focus();
                 });
 
-            }).done();
+            }).catch(handle_error);
         };
 
-        return view.show('entry_view', data);
+        view.show(entryViewTemplate, data);
     });
 };
+
+var entriesTemplate = fs.readFileSync(__dirname +
+    '/../../templates/entries.html', { encoding: 'utf8' });
 
 // Shows the list of entries.
 
@@ -58,9 +68,12 @@ exports.list = function() {
 
     return api.entry.list(start, end).then(function(entries) {
 
-        return view.show('entries', { entries: entries });
+        view.show(entriesTemplate, { entries: entries });
     });
 };
+
+var expandedTemplate = fs.readFileSync(__dirname +
+    '/../../templates/expanded.html', { encoding: 'utf8' });
 
 // Shows the list of expanded entries.
 
@@ -85,10 +98,10 @@ exports.expanded = function() {
 
                     item.debit = map[item.debit];
                     item.credit = map[item.credit];
-                })
+                });
             });
 
-            return view.show('expanded', { entries: entries });
+            view.show(expandedTemplate, { entries: entries });
         });
     });
 };
@@ -101,10 +114,9 @@ exports.edit = function(id) {
 
         return api.account.all().then(function(accounts) {
 
-            return view.show('entry', entryVM(accounts, entry)).then(function() {
+            view.show(entryTemplate, entryVM(accounts, entry));
 
-                document.getElementById('entry-title').focus();
-            });
+            document.getElementById('entry-title').focus();
         });
     });
 };
@@ -115,9 +127,8 @@ exports.add = function(id) {
 
     return api.account.all().then(function(accounts) {
 
-        return view.show('entry', entryVM(accounts)).then(function() {
+        view.show(entryTemplate, entryVM(accounts));
 
-            document.getElementById('entry-title').focus();
-        });
+        document.getElementById('entry-title').focus();
     });
 };

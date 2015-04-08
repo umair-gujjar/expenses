@@ -54,14 +54,16 @@ module.exports = function(accounts, data) {
             api.entry.update(entry.$id, entry.toJS()).done(function() {
 
                 window.location.hash = '#entry/view/' + entry.$id;
-            });
+
+            }).catch(handle_error);
 
         } else {
 
             api.entry.save(entry.toJS()).done(function(data) {
 
                 window.location.hash = '#entry/view/' + data;
-            });
+
+            }).catch(handle_error);
         }
 
         view.message('The entry is saved.');
@@ -78,7 +80,8 @@ module.exports = function(accounts, data) {
                     window.location.hash = '#entries';
 
                     view.message('The entry is deleted.');
-                });
+
+                }).catch(handle_error);
             }
         }
     };
@@ -92,12 +95,12 @@ module.exports = function(accounts, data) {
 
         if (confirm('Remove the item ' + item.title() + '?')) {
             
-            entry.items.remove(item);
+            entry.items.remove(item).catch(handle_error);
         }
     };
 
     return entry;
-}
+};
 
 function itemVM(data) {
 
@@ -162,4 +165,4 @@ function itemVM(data) {
     };
 
     return item;
-};
+}
