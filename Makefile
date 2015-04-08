@@ -21,7 +21,10 @@ export SHELLOPTS:=errexit:pipefail
 
 ui: $(EXTERNAL) $(BUNDLE)
 
-$(BUNDLE): public/js/app.js public/js/lib/*.js public/js/controller/*.js public/js/controller/vm/*.js Makefile
+BUNDLE_DEPS = public/js/app.js public/js/lib/*.js public/js/controller/*.js \
+	public/js/controller/vm/*.js public/templates/*.html Makefile
+
+$(BUNDLE): $(BUNDLE_DEPS)
 	rm -f $(MAP)
 	$(BROWSERIFY) --debug -t brfs -t uglifyify $< | $(EXORCIST) $(MAP) > $@
 
