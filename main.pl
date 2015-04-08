@@ -1,5 +1,14 @@
 :- module(main, []).
 
+% Catch uncaught errors/warnings and shut down
+% when they occur.
+
+user:message_hook(Term, Type, _):-
+    ( Type = error ; Type = warning ),
+    message_to_string(Term, String),
+    write(user_error, String), nl(user_error),
+    halt(1).
+
 :- use_module(library(http/http_json)).
 :- use_module(library(http/http_error)).
 :- use_module(library(http/http_wrapper)).
@@ -11,6 +20,18 @@
 :- use_module(library(arouter)).
 :- use_module(library(st/st_render)).
 :- use_module(library(st/st_file)).
+
+% Exception reporter.
+
+:- asserta((user:prolog_exception_hook(Exception, Exception, Frame, _):-
+    (   Exception = error(Term)
+    ;   Exception = error(Term, _)),
+    Term \= timeout_error(_, _),
+    Term \= existence_error(_, _),
+    Term \= io_error(_, _),
+    get_prolog_backtrace(Frame, 20, Trace),
+    format(user_error, 'Error: ~p', [Term]), nl(user_error),
+    print_prolog_backtrace(user_error, Trace), nl(user_error), fail)).
 
 :- use_module(api).
 
