@@ -12,7 +12,7 @@ EXTERNAL = public/js/external/knockout.js public/js/external/fetch.js \
 	public/js/external/es6-promise.js public/js/external/router-standalone.js \
 	public/js/external/kontainer-standalone.js
 
-# Make pipe fail when a comman
+# Make pipe fail when a command
 # in pipe fails.
 
 export SHELLOPTS:=errexit:pipefail
@@ -49,4 +49,8 @@ public/js/external/kontainer-standalone.js: node_modules/kontainer/dist/kontaine
 clean:
 	rm -f $(EXTERNAL) $(BUNDLE) $(MAP)
 
-.PHONY: all ui clean check
+deploy:
+	ssh www-data@infdot.com 'cd /sites/expenses.infdot.com && git pull origin master'
+	ssh root@infdot.com 'supervisorctl restart expenses_infdot_com'
+
+.PHONY: all ui clean check deploy
