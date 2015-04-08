@@ -50,7 +50,66 @@ module.exports = function(accounts, data, copy) {
         return account.$id;
     };
 
+    function cleanErrors() {
+
+        entry.items().forEach(function(item) {
+
+            item.errors.date([]);
+        });
+    }
+
+    function validate() {
+
+        cleanErrors();
+
+        var years = [];
+
+        // Fresh entries can only be added to
+        // currently selected year.
+
+        entry.items().forEach(function(item) {
+
+            var d = new Date(date.parse(item.date()) * 1000);
+
+            var y = d.getUTCFullYear();
+
+            years.push(y);
+
+            if (y.toString() !== period.year() && !entry.$id) {
+
+                item.errors.date.push('Items can only be added to the currently selected year.');
+            }
+        });
+
+        var crossYear = false;
+
+        for (var i = 1; i < years.length; i++) {
+
+            if (years[i] !== years[i - 1]) {
+
+                crossYear = true;
+
+                break;
+            }
+        }
+
+        if (crossYear) {
+
+            entry.items().forEach(function(item) {
+
+                item.errors.date.push('Cross-year entries cannot be added.');
+            });
+        }
+
+        return !document.querySelector('form .exp-input-error');
+    };
+
     entry.save = function() {
+
+        if (!validate()) {
+
+            return;
+        }
 
         if (entry.$id) {
 
@@ -61,27 +120,6 @@ module.exports = function(accounts, data, copy) {
             }).catch(handle_error);
 
         } else {
-
-            console.log('Save');
-
-            var error = false;
-
-            entry.items().forEach(function(item) {
-
-                var d = new Date(date.parse(item.date()) * 1000);
-
-                if (d.getUTCFullYear().toString() !== period.year()) {
-
-                    item.errors.date.push('Items can only be added to the currently selected year.');
-
-                    error = true;
-                }
-            });
-
-            if (error) {
-
-                return;
-            }
 
             api.entry.save(entry.toJS()).then(function(data) {
 
