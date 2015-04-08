@@ -14,7 +14,10 @@ module.exports = function(accounts, data, copy) {
         items: ko.observableArray([]),
         accounts: accounts,
         currencies: ['EUR', 'USD', 'GBP'],
-        copy: copy
+        copy: copy,
+        errors: {
+            title: ko.observableArray([])
+        }
     };
 
     if (data) {
@@ -52,9 +55,17 @@ module.exports = function(accounts, data, copy) {
 
     function cleanErrors() {
 
+        entry.errors.title([]);
+
         entry.items().forEach(function(item) {
 
+            item.errors.title([]);
             item.errors.date([]);
+            item.errors.debit([]);
+            item.errors.credit([]);
+            item.errors.currency([]);
+            item.errors.amount([]);
+            item.errors.eur_amount([]);
         });
     }
 
@@ -64,21 +75,19 @@ module.exports = function(accounts, data, copy) {
 
         var years = [];
 
+        if (!entry.title()) {
+
+            entry.errors.title.push('Entry title must be set.');
+        }
+
         // Fresh entries can only be added to
         // currently selected year.
 
         entry.items().forEach(function(item) {
 
-            var d = new Date(date.parse(item.date()) * 1000);
+            item.validate(!entry.$id);
 
-            var y = d.getUTCFullYear();
-
-            years.push(y);
-
-            if (y.toString() !== period.year() && !entry.$id) {
-
-                item.errors.date.push('Items can only be added to the currently selected year.');
-            }
+            years.push(item.year());
         });
 
         var crossYear = false;
@@ -101,8 +110,15 @@ module.exports = function(accounts, data, copy) {
             });
         }
 
-        return !document.querySelector('form .exp-input-error');
-    };
+        var error = document.querySelector('form .exp-input-error');
+
+        if (error) {
+
+            error.focus();
+        }
+
+        return !error;
+    }
 
     entry.save = function() {
 
@@ -167,7 +183,7 @@ module.exports = function(accounts, data, copy) {
 
         if (confirm('Remove the item ' + item.title() + '?')) {
             
-            entry.items.remove(item).catch(handle_error);
+            entry.items.remove(item);
         }
     };
 
@@ -186,7 +202,13 @@ function itemVM(data) {
         amount: ko.observable(),
         eur_amount: ko.observable(),
         errors: {
-            date: ko.observableArray([])
+            title: ko.observableArray([]),
+            date: ko.observableArray([]),
+            debit: ko.observableArray([]),
+            credit: ko.observableArray([]),
+            currency: ko.observableArray([]),
+            amount: ko.observableArray([]),
+            eur_amount: ko.observableArray([])
         }
     };
 
@@ -230,13 +252,84 @@ function itemVM(data) {
         return {
 
             title: item.title(),
-            date: date.parse(item.date()),
+            date: Math.floor(date.parse(item.date()).getTime() / 1000),
             debit: item.debit(),
             credit: item.credit(),
             amount: money.parse(item.amount()),
             currency: item.currency().toLowerCase(),
             eur_amount: money.parse(item.eur_amount())
         };
+    };
+
+    // Finds current item year.
+
+    item.year = ko.pureComputed(function() {
+
+        var parsed = date.parse(item.date());
+
+        return parsed ? parsed.getUTCFullYear() : null;
+    });
+
+    item.validate = function(fresh) {
+
+        if (!item.title()) {
+
+            item.errors.title.push('Item title must be set.');
+        }
+
+        if (!item.date()) {
+
+            item.errors.date.push('Item has no date set.');
+
+        } else {
+
+            var parsed = date.parse(item.date());
+
+            if (!parsed) {
+
+                item.errors.date.push('Item has invalid date.');
+
+            } else {
+
+                if (item.year() !== parseInt(period.year(), 10) && fresh) {
+
+                    item.errors.date.push('Items can only be added to the currently selected year.');
+                }
+            }
+        }
+
+        if (!item.debit()) {
+
+            item.errors.debit.push('Item debit account must be set.');
+        }
+
+        if (!item.credit()) {
+
+            item.errors.credit.push('Item credit account must be set.');
+        }
+
+        if (!item.currency()) {
+
+            item.errors.currency.push('Item currency must be set.');
+        }
+
+        if (!item.amount()) {
+
+            item.errors.amount.push('Item original amount must be set.');
+
+        } else if (isNaN(parseFloat(item.amount()))) {
+
+            item.errors.amount.push('Item original amount must be a number.');
+        }
+
+        if (!item.eur_amount()) {
+
+            item.errors.eur_amount.push('Item EUR amount must be set.');
+
+        } else if (isNaN(item.eur_amount())) {
+
+            item.errors.eur_amount.push('Item EUR amount must be a number.');
+        }
     };
 
     return item;

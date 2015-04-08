@@ -9,12 +9,12 @@
                         type="text" readonly="true" class="form-control">
                 </div>
             </div>
-            <div class="form-group">
+            <div class="form-group" data-bind="errors: errors.title">
                 <label class="col-sm-2 control-label">Title</label>
                 <div class="col-sm-10">
-                    <input data-bind="value: title"
-                        type="text" name="title" title="Title" id="entry-title"
-                        placeholder="Title" required="true" class="form-control">
+                    <input data-bind="textInput: title"
+                        type="text" name="title" id="entry-title"
+                        placeholder="Title" class="form-control">
                 </div>
             </div>
         </div>
@@ -23,7 +23,7 @@
     <div data-bind="foreach: items" class="items">
         <div class="panel panel-default">
             <div class="panel-body">
-                <div class="form-group">
+                <div class="form-group" data-bind="errors: errors.title">
                     <label class="col-sm-2 control-label">Item title</label>
                     <div class="col-sm-10">
                         <input data-bind="value: title" type="text"
@@ -33,49 +33,43 @@
                 <div class="form-group" data-bind="errors: errors.date">
                     <label class="col-sm-2 control-label">Date</label>
                     <div class="col-sm-10">
-                        <input data-bind="value: date"
-                            type="text" pattern="\d{2}\.\d{2}\.\d{4}" name="date" title="Date"
-                            placeholder="Date" required="true" class="form-control">
+                        <input data-bind="textInput: date" type="text"
+                            name="date" placeholder="DD.MM.YYYY" class="form-control">
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="form-group" data-bind="errors: errors.debit">
                     <label class="col-sm-2 control-label">Debit</label>
                     <div class="col-sm-10">
                         <select data-bind="options: $parent.accounts, value: debit,
                             optionsCaption: 'Select account', optionsText: $parent.accountText,
-                            optionsValue: $parent.accountValue"
-                            required="true" class="form-control"></select>
+                            optionsValue: $parent.accountValue" class="form-control"></select>
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="form-group" data-bind="errors: errors.credit">
                     <label class="col-sm-2 control-label">Credit</label>
                     <div class="col-sm-10">
                         <select data-bind="options: $parent.accounts, value: credit,
                             optionsCaption: 'Select account', optionsText: $parent.accountText,
-                            optionsValue: $parent.accountValue"
-                            required="true" class="form-control"></select>
+                            optionsValue: $parent.accountValue" class="form-control"></select>
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="form-group" data-bind="errors: errors.currency">
                     <label class="col-sm-2 control-label">Original currency</label>
                     <div class="col-sm-10">
                         <select data-bind="options: $parent.currencies,
-                            optionsCaption: 'Select currency', value: currency"
-                            required="true" class="form-control"></select>
+                            optionsCaption: 'Select currency', value: currency" class="form-control"></select>
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="form-group" data-bind="errors: errors.amount">
                     <label class="col-sm-2 control-label">Original amount</label>
                     <div class="col-sm-10">
-                        <input data-bind="value: amount" type="text"
-                            required="true" pattern="\d+(?:\.(\d{2}))?" class="form-control">
+                        <input data-bind="textInput: amount" type="text" class="form-control">
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="form-group" data-bind="errors: errors.eur_amount">
                     <label class="col-sm-2 control-label">EUR amount</label>
                     <div class="col-sm-10">
-                        <input data-bind="value: eur_amount" type="text"
-                            required="true" pattern="\d+(?:\.(\d{2}))?" class="form-control">
+                        <input data-bind="textInput: eur_amount" type="text" class="form-control">
                     </div>
                 </div>
                 <div class="form-group">

@@ -1,6 +1,6 @@
 exports.parse = function(text) {
 
-    var match = text.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+    var match = text.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
 
     if (match) {
 
@@ -13,11 +13,11 @@ exports.parse = function(text) {
         date.setUTCHours(0, 0, 0, 0);
         date.setUTCFullYear(year, month, monthDate);
 
-        return Math.floor(date.getTime() / 1000);
+        return date;
 
     } else {
 
-        throw new Error('Cannot parse date ' + text);
+        return null;
     }
 };
 
