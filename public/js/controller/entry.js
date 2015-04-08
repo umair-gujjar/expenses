@@ -35,22 +35,7 @@ exports.view = function(id) {
 
         data.copy = function() {
 
-            api.entry.get(id).then(function(entry) {
-
-                return api.account.all().then(function(accounts) {
-
-                    // Unset entry id.
-
-                    entry.$id = null;
-
-                    view.show(entryTemplate, entryVM(accounts, entry));
-
-                    // Set focus to title field.
-
-                    document.getElementById('entry-title').focus();
-                });
-
-            }).catch(handle_error);
+            window.location.hash = '#entry/copy/' + id;
         };
 
         view.show(entryViewTemplate, data);
@@ -115,6 +100,25 @@ exports.edit = function(id) {
         return api.account.all().then(function(accounts) {
 
             view.show(entryTemplate, entryVM(accounts, entry));
+
+            document.getElementById('entry-title').focus();
+        });
+    });
+};
+
+// Shows copy edit for the entry.
+
+exports.copy = function(id) {
+
+    return api.entry.get(id).then(function(entry) {
+
+        return api.account.all().then(function(accounts) {
+
+            // Unset entry id.
+
+            entry.$id = null;
+
+            view.show(entryTemplate, entryVM(accounts, entry, true));
 
             document.getElementById('entry-title').focus();
         });

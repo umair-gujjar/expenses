@@ -4,7 +4,7 @@ var view = require('../../lib/view');
 var api = require('../../lib/api');
 var handle_error = require('../../lib/handle_error');
 
-module.exports = function(accounts, data) {
+module.exports = function(accounts, data, copy) {
 
     var entry = {
 
@@ -12,7 +12,8 @@ module.exports = function(accounts, data) {
         $id: null,
         items: ko.observableArray([]),
         accounts: accounts,
-        currencies: ['EUR', 'USD', 'GBP']
+        currencies: ['EUR', 'USD', 'GBP'],
+        copy: copy
     };
 
     if (data) {

@@ -33,6 +33,11 @@ route(/^entry\/edit\/([a-z0-9\-]+)/, function(id) {
     entry.edit(id).catch(handle_error);
 });
 
+route(/^entry\/copy\/([a-z0-9\-]+)/, function(id) {
+
+    entry.copy(id).catch(handle_error);
+});
+
 route(/^entry\/view\/([a-z0-9\-]+)/, function(id) {
 
     entry.view(id).catch(handle_error);
