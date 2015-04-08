@@ -8,6 +8,10 @@ var money = require('./lib/money');
 var date = require('./lib/date');
 var handle_error = require('./lib/handle_error');
 
+// Errors binding.
+
+require('./lib/form_error');
+
 window.formatDate = function(unix) {
 
     return date.format(unix);

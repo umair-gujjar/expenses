@@ -2,6 +2,7 @@ var money = require('../../lib/money');
 var date = require('../../lib/date');
 var view = require('../../lib/view');
 var api = require('../../lib/api');
+var period = require('../../lib/period');
 var handle_error = require('../../lib/handle_error');
 
 module.exports = function(accounts, data, copy) {
@@ -60,6 +61,27 @@ module.exports = function(accounts, data, copy) {
             }).catch(handle_error);
 
         } else {
+
+            console.log('Save');
+
+            var error = false;
+
+            entry.items().forEach(function(item) {
+
+                var d = new Date(date.parse(item.date()) * 1000);
+
+                if (d.getUTCFullYear().toString() !== period.year()) {
+
+                    item.errors.date.push('Items can only be added to the currently selected year.');
+
+                    error = true;
+                }
+            });
+
+            if (error) {
+
+                return;
+            }
 
             api.entry.save(entry.toJS()).then(function(data) {
 
@@ -124,7 +146,10 @@ function itemVM(data) {
         credit: ko.observable(),
         currency: ko.observable(),
         amount: ko.observable(),
-        eur_amount: ko.observable()
+        eur_amount: ko.observable(),
+        errors: {
+            date: ko.observableArray([])
+        }
     };
 
     item.eur_orig = ko.computed(function() {
