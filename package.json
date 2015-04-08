@@ -1,0 +1,17 @@
+{
+  "name": "expenses",
+  "version": "0.0.1",
+  "private": true,
+  "devDependencies": {
+    "brfs": "^1.4.0",
+    "browserify": "^9.0.3",
+    "es6-promise": "^2.0.1",
+    "exorcist": "^0.1.6",
+    "hash-regex-router": "^1.0.1",
+    "jshint": "^2.6.3",
+    "knockout": "^3.3.0",
+    "kontainer": "0.0.2",
+    "uglifyify": "^3.0.1",
+    "whatwg-fetch": "^0.7.0"
+  }
+}
