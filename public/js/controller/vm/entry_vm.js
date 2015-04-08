@@ -90,7 +90,17 @@ module.exports = function(accounts, data, copy) {
 
     entry.addItem = function() {
 
-        entry.items.push(itemVM());
+        var items = entry.items(), item = itemVM();
+
+        if (items.length > 0) {
+
+            // Set date automatically from last
+            // item date.
+
+            item.date(items[items.length - 1].date());
+        }
+
+        entry.items.push(item);
     };
 
     entry.removeItem = function(item) {
