@@ -2,6 +2,7 @@ var money = require('../../lib/money');
 var date = require('../../lib/date');
 var view = require('../../lib/view');
 var api = require('../../lib/api');
+var handle_error = require('../../lib/handle_error');
 
 module.exports = function(accounts, data) {
 
@@ -51,7 +52,7 @@ module.exports = function(accounts, data) {
 
         if (entry.$id) {
 
-            api.entry.update(entry.$id, entry.toJS()).done(function() {
+            api.entry.update(entry.$id, entry.toJS()).then(function() {
 
                 window.location.hash = '#entry/view/' + entry.$id;
 
@@ -59,7 +60,7 @@ module.exports = function(accounts, data) {
 
         } else {
 
-            api.entry.save(entry.toJS()).done(function(data) {
+            api.entry.save(entry.toJS()).then(function(data) {
 
                 window.location.hash = '#entry/view/' + data;
 
@@ -75,7 +76,7 @@ module.exports = function(accounts, data) {
 
             if (confirm('Remove the entry?')) {
 
-                api.entry.remove(entry.$id).done(function() {
+                api.entry.remove(entry.$id).then(function() {
 
                     window.location.hash = '#entries';
 

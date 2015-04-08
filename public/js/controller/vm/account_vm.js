@@ -1,5 +1,6 @@
 var view = require('../../lib/view');
 var api = require('../../lib/api');
+var handle_error = require('../../lib/handle_error');
 
 module.exports = function(data) {
 
@@ -40,7 +41,7 @@ module.exports = function(data) {
 
         if (account.$id) {
 
-            api.account.update(account.$id, account.toJS()).done(function() {
+            api.account.update(account.$id, account.toJS()).then(function() {
 
                 window.location.hash = '#accounts';
 
@@ -48,7 +49,7 @@ module.exports = function(data) {
 
         } else {
 
-            api.account.save(account.toJS()).done(function() {
+            api.account.save(account.toJS()).then(function() {
 
                 window.location.hash = '#accounts';
 
@@ -68,11 +69,10 @@ module.exports = function(data) {
 
                     window.location.hash = '#accounts';
 
-                }, function(err) {
+                }).catch(function(err) {
 
                     view.message('Cannot delete the account. ' + err.message, 'alert-danger');
-
-                }).catch(handle_error);
+                });
             }
         }
     };
