@@ -54,7 +54,10 @@ var accountTemplate = fs.readFileSync(__dirname +
 
 exports.add = function() {
 
-    return view.show(accountTemplate, accountVM());
+    return Promise.resolve().then(function() {
+
+        view.show(accountTemplate, accountVM());
+    });
 };
 
 // Shows the account edit form for the given account.
@@ -63,6 +66,6 @@ exports.edit = function(id) {
 
     return api.account.get(id).then(function(data) {
 
-        return view.show(accountTemplate, accountVM(data));
+        view.show(accountTemplate, accountVM(data));
     });
 };

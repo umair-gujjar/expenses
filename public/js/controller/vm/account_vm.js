@@ -10,6 +10,11 @@ module.exports = function(data) {
         code: ko.observable(),
         name: ko.observable(),
         type: ko.observable(),
+        errors: {
+            code: ko.observableArray([]),
+            name: ko.observableArray([]),
+            type: ko.observableArray([])
+        },
         types: ['liability', 'income', 'equity',
             'asset', 'expense', 'cash', 'bank']
     };
@@ -37,7 +42,48 @@ module.exports = function(data) {
         return account.code() + ' (' + account.name() + ')';
     };
 
+    function cleanErrors() {
+
+        account.errors.code([]);
+        account.errors.name([]);
+        account.errors.type([]);
+    }
+
+    function validate() {
+
+        cleanErrors();
+
+        if (!account.code()) {
+
+            account.errors.code.push('Account code must be set.');
+        }
+
+        if (!account.name()) {
+
+            account.errors.name.push('Account name must be set.');
+        }
+
+        if (!account.type()) {
+
+            account.errors.type.push('Account type must be set.');
+        }
+
+        var error = document.querySelector('form .exp-input-error');
+
+        if (error) {
+
+            error.focus();
+        }
+
+        return !error;
+    }
+
     account.save = function() {
+
+        if (!validate()) {
+
+            return;
+        }
 
         if (account.$id) {
 
