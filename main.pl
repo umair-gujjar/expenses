@@ -123,6 +123,15 @@ login_check:-
         http_redirect(see_other, '/', Request)
     ;   http_redirect(see_other, '/login#invalid', Request)).
 
+% Handles logout.
+
+:- route_get(logout, logout).
+
+logout:-
+    http_current_request(Request),
+    http_session_retractall(login),
+    http_redirect(see_other, '/login', Request).
+
 % Main routing predicate.
 
 top_route(Request):-
