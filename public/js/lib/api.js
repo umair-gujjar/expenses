@@ -28,7 +28,9 @@ function fetchGet(url) {
 
     return fetch(url, {
 
-        headers: { 'Accept': 'application/json' }
+        headers: { 'Accept': 'application/json' },
+
+        credentials: 'same-origin'
 
     }).catch(function(err) {
 
@@ -47,7 +49,9 @@ function fetchDelete(url) {
 
         method: 'DELETE',
 
-        headers: { 'Accept': 'application/json' }
+        headers: { 'Accept': 'application/json' },
+
+        credentials: 'same-origin'
 
     }).catch(function(err) {
 
@@ -71,6 +75,8 @@ function fetchSave(url, data) {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
+
+        credentials: 'same-origin',
 
         body: JSON.stringify(data)
 
@@ -96,6 +102,8 @@ function fetchUpdate(url, data) {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
+
+        credentials: 'same-origin',
 
         body: JSON.stringify(data)
 

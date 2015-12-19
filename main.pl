@@ -29,10 +29,14 @@ user:message_hook(Term, Type, _):-
 
 :- use_module(library(http/http_json)).
 :- use_module(library(http/http_error)).
+:- use_module(library(http/http_session)).
 :- use_module(library(http/http_wrapper)).
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_unix_daemon)).
+:- use_module(library(http/http_parameters)).
+:- use_module(library(http/http_session)).
+:- use_module(library(http/json)).
 
 :- use_module(library(debug)).
 :- use_module(library(docstore)).
@@ -42,15 +46,84 @@ user:message_hook(Term, Type, _):-
 
 :- use_module(api).
 
+% Log errors to stderr.
+
 :- debug(http(error)).
 
-:- route_get(/, front).
+% Set session options.
+
+:- http_set_session_options([
+    create(auto),
+    timeout(86400)
+]).
+
+% auth(Username, Password).
+
+:- dynamic(auth/2).
+
+% Read auth data.
+
+add_user(User):-
+    atom_string(Username, User.username),
+    atom_string(Password, User.password),
+    asserta(auth(Username, Password)).
+
+read_auth_data(Stream):-
+    json_read_dict(Stream, Users),
+    maplist(add_user, Users).
+
+read_auth_data:-
+    setup_call_cleanup(
+        open('auth.json', read, Stream, []),
+        read_auth_data(Stream),
+        close(Stream)).
+
+:- read_auth_data.
+
+% Callback for handling authentication.
+
+:- meta_predicate(do_auth(0)).
+
+do_auth(Next):-
+    (   http_session_data(login)
+    ->  call(Next)
+    ;   http_current_request(Request),
+        http_redirect(see_other, '/login', Request)).
+
+:- route_get(/, do_auth, front).
 
 front:-
     format('Content-type: text/html; charset=UTF-8~n~n'),
     current_output(Stream),
     st_render_file(views/index, _{}, Stream,
         _{ strip: true, cache: true }).
+
+% Shows the login form.
+
+:- route_get(login, login_form).
+
+login_form:-
+    format('Content-type: text/html; charset=UTF-8~n~n'),
+    current_output(Stream),
+    st_render_file(views/login, _{}, Stream,
+        _{ strip: true, cache: true }).
+
+% Runs authentication.
+
+:- route_post(login, login_check).
+
+login_check:-
+    http_current_request(Request),
+    http_parameters(Request, [
+        username(Username, [atom, default('')]),
+        password(Password, [atom, default('')])
+    ]),
+    (   auth(Username, Password)
+    ->  http_session_assert(login),
+        http_redirect(see_other, '/', Request)
+    ;   http_redirect(see_other, '/login#invalid', Request)).
+
+% Main routing predicate.
 
 top_route(Request):-
     (   route(Request)

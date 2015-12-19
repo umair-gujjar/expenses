@@ -3,17 +3,28 @@
 General accounting ledger. The backend is written in SWI-Prolog
 and frontend is written in KnockoutJS+Bootstrap 3.
 
+## Configuration
+
+Add file `auth.json` with users and passwords:
+
+```json
+[
+    {
+        "username": "test",
+        "password": "test"
+    }
+]
+```
+
 ## Running
 
 Backend requires SWI-Prolog 7.x and packs:
 
- * [dict_schema](http://www.swi-prolog.org/pack/list?p=dict_schema)
- * [docstore](http://www.swi-prolog.org/pack/list?p=docstore)
-
-These can be installed:
-
-    ?- pack_install(dict_schema).
-    ?- pack_install(docstore).
+    ?- pack_install('http://packs.rlaanemets.com/dict-schema/dict_schema-0.0.2.tgz').
+    ?- pack_install('http://packs.rlaanemets.com/docstore/docstore-2.0.1.tgz').
+    ?- pack_install('http://packs.rlaanemets.com/simple-template/simple_template-1.0.1.tgz').
+    ?- pack_install('http://packs.rlaanemets.com/alternative-router/arouter-1.1.1.tgz').
+    ?- pack_install('http://packs.rlaanemets.com/sort-dict/sort_dict-0.0.3.tgz').
 
 For running on *nix platform:
 
@@ -21,7 +32,7 @@ For running on *nix platform:
 
 The app is accessible from <http://localhost:8080>. Accounts must
 be added from <http://localhost:8080/#accounts> before any entries
-can be added. There is no built-in authentication.
+can be added.
 
 ## License
 
