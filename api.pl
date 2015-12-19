@@ -8,6 +8,7 @@
 :- use_module(library(arouter)).
 :- use_module(library(sort_dict)).
 
+:- use_module(auth).
 :- use_module(schema).
 
 % Error messages.
@@ -18,7 +19,8 @@ reply_error(invalid_data):-
 reply_error(account_in_use):-
     reply_json(_{ status: error, code: 112, message: 'Account in use.' }).
 
-:- route_post(api/entry, new_entry).
+:- route_post(api/entry,
+    do_auth, new_entry).
 
 new_entry:-
     http_current_request(Request),
@@ -30,7 +32,8 @@ new_entry:-
     ;   format(user_error, '~p', [Errors]), % FIXME use debug
         reply_error(invalid_data)).
 
-:- route_get(api/entries/Start/End, get_entries(Start, End)).
+:- route_get(api/entries/Start/End,
+    do_auth, get_entries(Start, End)).
 
 get_entries(Start, End):-
     atom_number(Start, StartDate),
@@ -72,7 +75,8 @@ earliest_item_date([], Acc, Acc).
 
 % Responds entry without accounts.
 
-:- route_get(api/entry/Id, get_entry(Id)).
+:- route_get(api/entry/Id,
+    do_auth, get_entry(Id)).
 
 get_entry(Id):-
     ds_col_get(entry, Id, Entry),
@@ -80,7 +84,8 @@ get_entry(Id):-
 
 % Responds full entry with accounts.
 
-:- route_get(api/entry/Id/full, get_full_entry(Id)).
+:- route_get(api/entry/Id/full,
+    do_auth, get_full_entry(Id)).
 
 get_full_entry(Id):-
     ds_col_get(entry, Id, Entry),
@@ -139,13 +144,15 @@ increase_key(Key, In, Value, Out):-
         put_dict(Key, In, New, Out)
     ;   put_dict(Key, In, Value, Out)).
 
-:- route_del(api/entry/Id, delete_entry(Id)).
+:- route_del(api/entry/Id,
+    do_auth, delete_entry(Id)).
 
 delete_entry(Id):-
     ds_col_remove(entry, Id),
     reply_json(_{ status: success, data: Id }).
 
-:- route_put(api/entry/Id, update_entry(Id)).
+:- route_put(api/entry/Id,
+    do_auth, update_entry(Id)).
 
 update_entry(Id):-
     http_current_request(Request),
@@ -157,7 +164,8 @@ update_entry(Id):-
         reply_json(_{ status: success, data: Id })
     ;   reply_error(invalid_data)).
 
-:- route_post(api/account, new_account).
+:- route_post(api/account,
+    do_auth, new_account).
 
 new_account:-
     http_current_request(Request),
@@ -168,21 +176,24 @@ new_account:-
         reply_json(_{ status: success, data: Id })
     ;   reply_error(invalid_data)).
 
-:- route_get(api/accounts, get_accounts).
+:- route_get(api/accounts,
+    do_auth, get_accounts).
 
 get_accounts:-
     ds_all(account, Accounts),
     sort_dict(code, Accounts, Sorted),
     reply_json(_{ status: success, data: Sorted }).
 
-:- route_get(api/account/Id, get_account(Id)).
+:- route_get(api/account/Id,
+    do_auth, get_account(Id)).
 
 get_account(Id):-
     (   ds_col_get(account, Id, Account)
     ->  reply_json(_{ status: success, data: Account })
     ;   reply_json(_{ status: error, code: 101, message: 'No such account.' })).
 
-:- route_put(api/account/Id, update_account(Id)).
+:- route_put(api/account/Id,
+    do_auth, update_account(Id)).
 
 update_account(Id):-
     http_current_request(Request),
@@ -198,7 +209,8 @@ update_account(Id):-
 % Checks that the account is not
 % used by any entry.
 
-:- route_del(api/account/Id, delete_account(Id)).
+:- route_del(api/account/Id,
+    do_auth, delete_account(Id)).
 
 delete_account(Id):-
     ds_all(entry, [items], Entries),
@@ -218,7 +230,7 @@ entries_use_account([_|Entries], Account):-
 % Items of an account.
 
 :- route_get(api/account/Id/items/Start/End,
-    get_account_items(Id, Start, End)).
+    do_auth, get_account_items(Id, Start, End)).
 
 get_account_items(Id, Start, End):-
     atom_number(Start, StartDate),
@@ -303,7 +315,7 @@ account_effect(Id, Side, Amount, Effect):-
 % Cash flow items.
 
 :- route_get(api/cash/Start/End,
-    get_cash_flow(Start, End)).
+    do_auth, get_cash_flow(Start, End)).
 
 get_cash_flow(Start, End):-
     atom_number(Start, StartDate),
