@@ -75,7 +75,7 @@ earliest_item_date([], Acc, Acc).
 :- route_get(api/entry/Id, get_entry(Id)).
 
 get_entry(Id):-
-    ds_get(Id, Entry),
+    ds_col_get(entry, Id, Entry),
     reply_json(_{ status: success, data: Entry }).
 
 % Responds full entry with accounts.
@@ -83,7 +83,7 @@ get_entry(Id):-
 :- route_get(api/entry/Id/full, get_full_entry(Id)).
 
 get_full_entry(Id):-
-    ds_get(Id, Entry),
+    ds_col_get(entry, Id, Entry),
     entry_accounts(Entry, Accounts),
     entry_changes(Entry, Changes),
     put_dict(Entry, _{
@@ -100,11 +100,11 @@ entry_item_accounts([Item|Items], Acc, Accounts):-
     Credit = Item.credit,
     (   get_dict(Debit, Acc, _)
     ->  Tmp = Acc
-    ;   ds_get(Debit, DebitAccount),
+    ;   ds_col_get(account, Debit, DebitAccount),
         put_dict(Debit, Acc, DebitAccount, Tmp)),
     (   get_dict(Credit, Acc, _)
     ->  New = Tmp
-    ;   ds_get(Credit, CreditAccount),
+    ;   ds_col_get(account, Credit, CreditAccount),
         put_dict(Credit, Tmp, CreditAccount, New)),
     entry_item_accounts(Items, New, Accounts).
 
@@ -142,7 +142,7 @@ increase_key(Key, In, Value, Out):-
 :- route_del(api/entry/Id, delete_entry(Id)).
 
 delete_entry(Id):-
-    ds_remove(Id),
+    ds_col_remove(entry, Id),
     reply_json(_{ status: success, data: Id }).
 
 :- route_put(api/entry/Id, update_entry(Id)).
@@ -178,7 +178,7 @@ get_accounts:-
 :- route_get(api/account/Id, get_account(Id)).
 
 get_account(Id):-
-    (   ds_get(Id, Account)
+    (   ds_col_get(account, Id, Account)
     ->  reply_json(_{ status: success, data: Account })
     ;   reply_json(_{ status: error, code: 101, message: 'No such account.' })).
 
@@ -204,7 +204,7 @@ delete_account(Id):-
     ds_all(entry, [items], Entries),
     (   entries_use_account(Entries, Id)
     ->  reply_error(account_in_use)
-    ;   ds_remove(Id),
+    ;   ds_col_remove(account, Id),
         reply_json(_{ status: success, data: Id })).
 
 entries_use_account([Entry|_], Account):-
@@ -248,8 +248,8 @@ account_entry_items([Item|Items], Start, End, EntryTitle, EntryId, Id, Acc, Out)
     Date = Item.date,
     (   (Debit = Id ; Credit = Id),
         Date >= Start, Date =< End
-    ->  ds_get(Debit, DebitAccount),
-        ds_get(Credit, CreditAccount),
+    ->  ds_col_get(account, Debit, DebitAccount),
+        ds_col_get(account, Credit, CreditAccount),
         (   Debit = Id
         ->  Type = DebitAccount.type,
             effect_multiplier(debit, Type, Mult)
@@ -296,7 +296,7 @@ balance(liability).
 % Calculates amount effect for an account.
 
 account_effect(Id, Side, Amount, Effect):-
-    ds_get(Id, [type], Account),
+    ds_col_get(account, Id, [type], Account),
     effect_multiplier(Side, Account.type, Mult),
     Effect is Mult * Amount.
 
@@ -340,12 +340,12 @@ filter_cash_items([Item|Items], Start, End, [Out|Filtered]):-
     (   account_is_cash(Debit),
         \+ account_is_cash(Credit),
         account_effect(Debit, debit, Amount, Effect),
-        ds_get(Credit, CreditAccount),
+        ds_col_get(account, Credit, CreditAccount),
         Out = _{ amount: Effect, account: CreditAccount, date: Date }
     ;   account_is_cash(Credit),
         \+ account_is_cash(Debit),
         account_effect(Credit, credit, Amount, Effect),
-        ds_get(Debit, DebitAccount),
+        ds_col_get(account, Debit, DebitAccount),
         Out = _{ amount: Effect, account: DebitAccount, date: Date }), !,
     filter_cash_items(Items, Start, End, Filtered).
 
@@ -355,7 +355,7 @@ filter_cash_items([_|Items], Start, End, Filtered):- !,
 filter_cash_items([], _, _, []).
 
 account_is_expense_or_income(AccountId):-
-    ds_get(AccountId, [type], Account),
+    ds_col_get(account, AccountId, [type], Account),
     Type = Account.type,
     (Type = expense ; Type = income), !.
 
@@ -363,6 +363,6 @@ account_is_expense_or_income(AccountId):-
 % cash or bank account.
 
 account_is_cash(AccountId):-
-    ds_get(AccountId, [type], Account),
+    ds_col_get(account, AccountId, [type], Account),
     Type = Account.type,
     (Type = cash ; Type = bank), !.
