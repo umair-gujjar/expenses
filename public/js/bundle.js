@@ -39,7 +39,7 @@ module.exports=function(o){console.log(o),console.error(o.stack)};
 
 
 },{}],11:[function(require,module,exports){
-exports.parse=function(r){var t=r.match(/^\-?(\d+)(?:\.(\d{2}))?$/);if(t){var a=parseInt(t[1],10),n=0;t[2]&&(n=parseInt(t[2],10));"-"===r.charAt(0);return 100*a+n}throw new Error("Cannot parse "+r)},exports.format=function(r){var t=!1;0>r&&(t=!0,r=-r);var a=Math.floor(r/100),n=r%100;return(t?"-":"")+a+"."+((10>n?"0":"")+n)};
+exports.parse=function(r){var a=r.match(/^\-?(\d+)(?:\.(\d{2}))?$/);if(a){var t=parseInt(a[1],10),n=0;a[2]&&(n=parseInt(a[2],10));var o="-"===r.charAt(0),e=100*t+n;return o?-e:e}throw new Error("Cannot parse "+r)},exports.format=function(r){var a=!1;0>r&&(a=!0,r=-r);var t=Math.floor(r/100),n=r%100;return(a?"-":"")+t+"."+((10>n?"0":"")+n)};
 
 
 },{}],12:[function(require,module,exports){

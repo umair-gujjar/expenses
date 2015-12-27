@@ -14,7 +14,9 @@ exports.parse = function(string) {
 
         var neg = string.charAt(0) === '-';
 
-        return integerPart * 100 + fractionalPart;
+        var value = integerPart * 100 + fractionalPart;
+
+        return neg ? -value : value;
 
     } else {
 
