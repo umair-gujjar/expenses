@@ -1,6 +1,6 @@
 exports.parse = function(string) {
 
-    var match = string.match(/(\d+)(?:\.(\d{2}))?/);
+    var match = string.match(/^\-?(\d+)(?:\.(\d{2}))?$/);
 
     if (match) {
 
@@ -11,6 +11,8 @@ exports.parse = function(string) {
 
             fractionalPart = parseInt(match[2], 10);
         }
+
+        var neg = string.charAt(0) === '-';
 
         return integerPart * 100 + fractionalPart;
 
